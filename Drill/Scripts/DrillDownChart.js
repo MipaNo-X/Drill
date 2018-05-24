@@ -10,7 +10,7 @@ var DrillLablel1 = ["Книга 1", "Книга 2", "Книга 3", "Книга 
 var DrillDatal2 = [300,400,600];
 var DrillLablel2 = ["Уф 1","Уф 2","Уф 3"];
 var myChart = new Chart(ctx, {
-    type: 'pie',
+    type: 'pie',///
     data: {
         labels: MainLable,
         datasets: [{
