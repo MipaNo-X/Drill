@@ -1,72 +1,84 @@
 ﻿//------------------------Построение Диграммы------------------------
-var ctx = document.getElementById("myChart").getContext('2d');
-var level = 0;
-var BackButton = document.getElementById("C");
-BackButton.style.display = 'none';
-var MainData = [0];
-var MainLable = [""];
-var DrillDatal1 = [75,48,31,26];
-var DrillLablel1 = ["Книга 1", "Книга 2", "Книга 3", "Книга 4"];
-var DrillDatal2 = [300,400,600];
-var DrillLablel2 = ["Уф 1","Уф 2","Уф 3"];
-var myChart = new Chart(ctx, {
-    type: 'pie',///
-    data: {
-        labels: MainLable,
-        datasets: [{
-            label: '# of Votes',
-            data: MainData,
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        onClick: function (e) {
-            var activePoints = this.getElementsAtEvent(e);
-            var selectedIndex = activePoints[0]._index;
-            switch (this.data.datasets[0].data[selectedIndex]) {
-                case MainData[0]:
-                    this.data.datasets[0].data = DrillDatal1;
-                    this.data.labels = DrillLablel1;
-                    this.update();
-                    BackButton.style.display = 'block';
-                    level++;
-                    break;
+    var Canvas = document.createElement('canvas');
+    Canvas.id = 'myChart';
+    Canvas.height = '100';
+    document.getElementById('Chart').appendChild(Canvas);
+    var ctx = document.getElementById("myChart").getContext('2d');
+    var level = 0;
+    var MainData = [0];
+    var MainLable = [""];
+    var DrillDatal1 = [75, 48, 31, 26];
+var DrillLablel1 = ["Автор 1", "Автор 2", "Автор 3", "Автор 4"];
+    var DrillDatal2 = [300, 400, 600];
+var DrillLablel2 = ["Книга 1", "Книга 2", "Книга 3"];
+var DrillData = new Array();
+    var myChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: MainLable,
+            datasets: [{
+                label: '# of Votes',
+                data: MainData,
+                backgroundColor: [
+                    'rgba(255, 99, 132,1)',
+                    'rgba(54, 162, 235,1)',
+                    'rgba(255, 206, 86,1)',
+                    'rgba(75, 192, 192,1)',
+                    'rgba(153, 102, 255,1)',
+                    'rgba(255, 159, 64,1)'
+                ],
+                borderColor: [
+             
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            segmentShowStroke: false,
+
+            animation: {
+
+                animateRotate: false,
+                animateScale: true
+            },
+            tooltips: {
+
+                xAlign: 'bottom'
+
+            },
+            showAllTooltips: true,
+            title: {
+                display: true,
+                text: 'Количество прочитанных книг'
+            },
+            onClick: function (e) {
+                var activePoints = this.getElementsAtEvent(e);
+                var selectedIndex = activePoints[0]._index;
+                switch (this.data.datasets[0].data[selectedIndex]) {
+                    case MainData[0]:
+                        this.data.datasets[0].data = DrillDatal1;
+                        this.data.labels = DrillLablel1;
+                        this.update();
+                        BackButton.style.display = 'block';
+                        level++;
+                        break;
                     case DrillDatal1[0]:
                         this.data.datasets[0].data = DrillDatal2;
                         this.data.labels = DrillLablel2;
                         this.update();
                         level++;
                         break;
+                }
             }
         }
-    }
-});
+    });
 
 //------------------------Построение Диграммы------------------------
 $(document).ready(function () {
     GetAllBooks();
 });
-// Получение всех книг по ajax-запросу
-function GetAllBooks() {
 
-    $("#createBlock").css('display', 'block');
-    $("#editBlock").css('display', 'none');
+function GetAllBooks() {
     $.ajax({
         url: '/api/values',
         type: 'GET',
@@ -80,7 +92,7 @@ function GetAllBooks() {
     });
 }
 
-// вывод полученных данных на экран
+
 function WriteResponse(books) {
     var i=0;
     $.each(books, function (index, book) {
@@ -92,6 +104,11 @@ function WriteResponse(books) {
     myChart.update();
 }
 
+var BackButton = document.createElement('input');
+BackButton.type = 'button';
+BackButton.value = 'Back';
+document.getElementById('Chart').appendChild(BackButton);
+BackButton.style.display = 'none';
 
 BackButton.onclick = function () {
     switch (level) {
@@ -110,3 +127,47 @@ BackButton.onclick = function () {
         break;
     }
 };
+
+for (var j = 0; j <= MainData.length; j++) {
+    DrillData[j] = new Array();
+}
+DrillData[0] = DrillDatal1;
+
+Chart.pluginService.register({
+    beforeRender: function (chart) {
+        if (chart.config.options.showAllTooltips) {
+            chart.pluginTooltips = [];
+            chart.config.data.datasets.forEach(function (dataset, i) {
+                chart.getDatasetMeta(i).data.forEach(function (sector, j) {
+                    chart.pluginTooltips.push(new Chart.Tooltip({
+                        _chart: chart.chart,
+                        _chartInstance: chart,
+                        _data: chart.data,
+                        _options: chart.options.tooltips,
+                        _active: [sector]
+                    }, chart));
+                });
+            });
+
+            chart.options.tooltips.enabled = false;
+        }
+    },
+    afterDraw: function (chart, easing) {
+        if (chart.config.options.showAllTooltips) {
+            if (!chart.allTooltipsOnce) {
+                if (easing !== 1)
+                    return;
+                chart.allTooltipsOnce = true;
+            }
+
+            chart.options.tooltips.enabled = true;
+            Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
+                tooltip.initialize();
+                tooltip.update();
+                tooltip.pivot();
+                tooltip.transition(easing).draw();
+            });
+            chart.options.tooltips.enabled = false;
+        }
+    }
+});
