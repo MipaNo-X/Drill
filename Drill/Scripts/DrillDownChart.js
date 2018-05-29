@@ -1,25 +1,28 @@
-﻿//------------------------Построение Диграммы------------------------
-    var Canvas = document.createElement('canvas');
+﻿//-------------создание элемента типа canvas для рисование на нём диаграммы------------
+    var Canvas = document.createElement('canvas'); 
     Canvas.id = 'myChart';
     Canvas.height = '100';
-    document.getElementById('Chart').appendChild(Canvas);
-    var ctx = document.getElementById("myChart").getContext('2d');
-    var level = 0;
+document.getElementById('Chart').appendChild(Canvas); //вшм в ктором будет находится наша диаграмма
+//--------------------------------------------------------------------------------------
+    var ctx = document.getElementById("myChart").getContext('2d');// элемент оторый отвечает за то что будет построен объект на canvas
+    var level = 0; //уровень диаграммы на котором находится пользователь
+//инициализация массивов для данных на главном поле
     var MainData = [0];
     var MainLable = [""];
-    var DrillDatal1 = [75, 48, 31, 26];
-var DrillLablel1 = ["Автор 1", "Автор 2", "Автор 3", "Автор 4"];
-    var DrillDatal2 = [300, 400, 600];
-var DrillLablel2 = ["Книга 1", "Книга 2", "Книга 3"];
+    var DrillDatal1 = [75, 48, 31, 26]; //статичные данные для уровня 1
+var DrillLablel1 = ["Автор 1", "Автор 2", "Автор 3", "Автор 4"]; //статичные данные для уровня 1
+var DrillDatal2 = [300, 400, 600]; //статичные данные для уровня 2
+var DrillLablel2 = ["Книга 1", "Книга 2", "Книга 3"]; //статичные данные для уровня 2
 var DrillData = new Array();
-    var myChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: MainLable,
+//------------------------Построение Диграммы------------------------
+    var myChart = new Chart(ctx, { //создание самой диаграммы 
+        type: 'pie', //тип диаграммы (pie,bar,и.т.п.)
+        data: { //данные для потсроения
+            labels: MainLable, //лэйблы (название секторов)
             datasets: [{
                 label: '# of Votes',
-                data: MainData,
-                backgroundColor: [
+                data: MainData, //данные для секторов
+                backgroundColor: [ //цвет задается для сегментов либо вручную либо надо писать функцию которая будет его рандомить
                     'rgba(255, 99, 132,1)',
                     'rgba(54, 162, 235,1)',
                     'rgba(255, 206, 86,1)',
@@ -33,28 +36,28 @@ var DrillData = new Array();
                 borderWidth: 2
             }]
         },
-        options: {
+        options: { // опции для нашей диаграммы
             segmentShowStroke: false,
 
-            animation: {
+            animation: { //анимация кругового появления
 
                 animateRotate: false,
                 animateScale: true
             },
-            tooltips: {
+            tooltips: { //положение тултипов на секторах
 
                 xAlign: 'bottom'
 
             },
             showAllTooltips: true,
-            title: {
+            title: { //название диаграммы
                 display: true,
                 text: 'Количество прочитанных книг'
             },
-            onClick: function (e) {
+            onClick: function (e) { // событие которое вызывает функцию, создающие drill (обращение к полю по индексу)
                 var activePoints = this.getElementsAtEvent(e);
                 var selectedIndex = activePoints[0]._index;
-                switch (this.data.datasets[0].data[selectedIndex]) {
+                switch (this.data.datasets[0].data[selectedIndex]) { //switch для выбранных id рисовать новые данные соответсвиющие drill
                     case MainData[0]:
                         this.data.datasets[0].data = DrillDatal1;
                         this.data.labels = DrillLablel1;
@@ -78,7 +81,7 @@ $(document).ready(function () {
     GetAllBooks();
 });
 
-function GetAllBooks() {
+function GetAllBooks() { //ajax запрос на получение книг
     $.ajax({
         url: '/api/values',
         type: 'GET',
@@ -93,23 +96,24 @@ function GetAllBooks() {
 }
 
 
-function WriteResponse(books) {
+function WriteResponse(books) { // взятие книги и наполнение данных для построение диаграммы
     var i=0;
     $.each(books, function (index, book) {
-        MainData[i] = book.Readed;
-        MainLable[i] = book.Genre;        
+        MainData[i] = book.Readed; //Загоняется число прочитанных
+        MainLable[i] = book.Genre;  //загоняется лэйбл, соответствующий названию сектора 
         i++;
     }   
     );
-    myChart.update();
+    myChart.update(); //обновить диаграмму
 }
-
+//--------------------------------создание кнопки Бэк-------------------------
 var BackButton = document.createElement('input');
 BackButton.type = 'button';
 BackButton.value = 'Back';
 document.getElementById('Chart').appendChild(BackButton);
-BackButton.style.display = 'none';
-
+BackButton.style.display = 'none'
+//----------------------------------------------------------------------------
+//-----------------фукционал кнопки возврат-----------------------------------
 BackButton.onclick = function () {
     switch (level) {
         case 1:
@@ -127,12 +131,12 @@ BackButton.onclick = function () {
         break;
     }
 };
-
+//-----------------фукционал кнопки возврат--------------------------------------------
 for (var j = 0; j <= MainData.length; j++) {
     DrillData[j] = new Array();
 }
 DrillData[0] = DrillDatal1;
-
+//-------------------- Функиция для постоянного отображения тултипов на секторах даграммы-----------------------------
 Chart.pluginService.register({
     beforeRender: function (chart) {
         if (chart.config.options.showAllTooltips) {
@@ -171,3 +175,4 @@ Chart.pluginService.register({
         }
     }
 });
+//--------------------------------------------------------------------------------------------------------------------
